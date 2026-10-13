@@ -90,7 +90,7 @@ Para desarrollo, `npm run dev` sirve los recursos con Vite y `composer dev` arra
 
 ## Docker opcional
 
-Se incluyen Dockerfile, Apache y Compose. No se ejecutaron en esta computadora porque Docker no está instalado.
+Se incluyen Dockerfile, Apache y Compose. Para producción en Ubuntu/Kali usa deploy/compose.production.yaml y la guía Linux. La compilación, el arranque, las migraciones, el respaldo y la actualización de ese entorno pasaron en GitHub Actions sobre Ubuntu 24.04. La variante compose.yaml siguiente es para uso local.
 
 Configura `.env` con `DB_PASSWORD` y `APP_KEY`, luego:
 
@@ -106,7 +106,7 @@ Acceso: `http://127.0.0.1:8088`. PostgreSQL no publica un puerto del host. Los d
 
 ## Verificación
 
-La suite `tests/Feature/InventoryWorkflowTest.php` se ejecutó sobre la copia restaurada de PostgreSQL. Cada prueba usa una transacción que se revierte al terminar. Incluye consultas de los módulos, stock, impuestos, estados, fechas, financiamiento, transferencias, anulaciones, ajustes, conteos, permisos, activos y planificación.
+Las suites de inventario, reportería y disponibilidad pasaron: **24 pruebas y 1.686 comprobaciones**. La suite `tests/Feature/InventoryWorkflowTest.php` se ejecutó sobre la copia restaurada de PostgreSQL. Cada prueba usa una transacción que se revierte al terminar. Incluye consultas de los módulos, stock, impuestos, estados, fechas, financiamiento, transferencias, anulaciones, ajustes, conteos, permisos, activos y planificación.
 
 Para repetirla, usa una copia de prueba del respaldo, ejecuta las migraciones y crea `yanarteaga`. Configura la conexión en `.env`; `phpunit.xml` usa PostgreSQL y la base `yanarteaga`.
 
@@ -114,7 +114,7 @@ Para repetirla, usa una copia de prueba del respaldo, ejecuta las migraciones y 
 php artisan test
 ```
 
-La compilación de React y los PDF de muestra están verificados; los PDF se renderizaron y revisaron visualmente. La revisión de la interfaz en navegador quedó sin verificar: el entorno aislado no permitió acceder al servidor loopback y su navegador bloqueó archivos `file://`. La configuración Docker tampoco fue ejecutada.
+La compilación de React y los PDF de muestra están verificados; los PDF se renderizaron y revisaron visualmente. La revisión de la interfaz en navegador quedó sin verificar: el entorno aislado no permitió acceder al servidor loopback y su navegador bloqueó archivos `file://`. El despliegue de producción Docker se verificó en Ubuntu 24.04 mediante GitHub Actions; Kali no se ejecutó en una máquina de prueba.
 
 ## Alcance de la migración
 

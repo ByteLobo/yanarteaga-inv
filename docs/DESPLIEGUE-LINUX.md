@@ -102,3 +102,11 @@ Reemplaza RESPALDO por el directorio real. Si las migraciones no son compatibles
 Se incluye `.github/workflows/linux-deploy.yml`, que valida Bash, ShellCheck y Compose, compila la imagen y prueba migraciones y `/ready` con el esquema original sin datos personales en Ubuntu. No despliega en un servidor ni crea credenciales reales. En la computadora Windows de preparación no hay Docker ni WSL instalado: la ejecución real del contenedor y los scripts se verifica en ese workflow y en tu servidor Linux.
 
 Guía de HTTPS: https://caddyserver.com/docs/automatic-https
+
+### Evidencia de ejecución
+
+El 13/10/2026 pasaron la compilación, ShellCheck, migraciones, HTTP, comprobación de disponibilidad, respaldo/hash y actualización en Ubuntu 24.04:
+
+https://github.com/ByteLobo/yanarteaga-inv/actions/runs/38474230229
+
+La suite local ampliada pasó: 24 pruebas, 1.686 comprobaciones. Kali usa las mismas imágenes Docker; no se ejecutó directamente en una máquina Kali. La obtención de certificados HTTPS depende del dominio y DNS del servidor definitivo.
