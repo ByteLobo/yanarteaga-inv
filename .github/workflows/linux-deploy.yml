@@ -1,0 +1,35 @@
+name: Linux deployment checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate scripts
+        run: |
+          bash -n deploy/linux.sh
+          sh -n docker/entrypoint.sh
+          shellcheck deploy/linux.sh docker/entrypoint.sh
+      - name: Initialize production configuration and build
+        run: bash deploy/linux.sh init http://localhost:8088
+      - name: Import schema and run migrations
+        run: |
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml exec -T db psql -v ON_ERROR_STOP=1 -U yanarteaga -d yanarteaga < database/legacy/schema-original.sql
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml run --rm --no-deps app php artisan migrate --force
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml up -d --wait --wait-timeout 180
+          bash deploy/linux.sh status
+          curl --fail --silent --show-error http://127.0.0.1:8088/
+      - name: Backup verification
+        run: |
+          bash deploy/linux.sh backup
+          for dir in deploy/backups/*; do (cd "$dir" && sha256sum -c SHA256SUMS); done
+          bash deploy/linux.sh status
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml logs --tail=100

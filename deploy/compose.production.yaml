@@ -1,0 +1,76 @@
+name: yanarteaga-inv
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: yanarteaga
+      POSTGRES_USER: yanarteaga
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Missing DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U yanarteaga -d yanarteaga]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  app:
+    image: ${APP_IMAGE:-yanarteaga-inv:local}
+    build:
+      context: ..
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:80"
+    environment:
+      APP_NAME: yanarteaga
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: ${APP_KEY:?Missing APP_KEY}
+      APP_URL: ${APP_URL:?Missing APP_URL}
+      APP_LOCALE: es
+      APP_FALLBACK_LOCALE: es
+      TRUST_PROXY: 'true'
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: yanarteaga
+      DB_USERNAME: yanarteaga
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: file
+      SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      LOG_CHANNEL: stderr
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, php, -r, "exit(@file_get_contents('http://127.0.0.1/ready') === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+  proxy:
+    image: caddy:2
+    profiles: [https]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+volumes:
+  postgres_data:
+  app_storage:
+  caddy_data:
+  caddy_config:

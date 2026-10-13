@@ -7,6 +7,19 @@ use App\Http\Controllers\ReportController;
 
 Route::get('/', fn()=>view('app'))->name('login');
 
+Route::get('/ready', function () {
+    try {
+        if (!config('app.key') || !is_file(public_path('build/manifest.json'))) {
+            throw new \RuntimeException('Not configured');
+        }
+        \Illuminate\Support\Facades\DB::select('select 1 from msib.almacen limit 1');
+        \Illuminate\Support\Facades\DB::select('select 1 from public.app_report_issues limit 1');
+        return response()->json(['status'=>'ready'])->header('Cache-Control', 'no-store');
+    } catch (\Throwable $e) {
+        return response()->json(['status'=>'unavailable'], 503)->header('Cache-Control', 'no-store');
+    }
+})->withoutMiddleware('web');
+
 Route::get('/api/session',[WorkspaceController::class,'session']);
 
 Route::post('/api/login',[WorkspaceController::class,'login'])->middleware('throttle:5,1');

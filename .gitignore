@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/deploy/.env.production
+/deploy/backups/
+/deploy/.lock
+/deploy/current-image

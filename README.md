@@ -2,6 +2,10 @@
 
 Aplicación Laravel 12 + React 19 + PostgreSQL 16 construida a partir de `MSIBO.xpz` y `sim_b.backup`. Interfaz en español, identificación textual genérica y sin logos. El gestionador inicial es `yanarteaga`.
 
+## Despliegue en Ubuntu / Kali Linux
+
+Consulta [la guía de despliegue Linux](docs/DESPLIEGUE-LINUX.md). Incluye instalación, HTTPS, restauración inicial y actualización con respaldo. Comienza con `bash deploy/linux.sh init https://tu.dominio`.
+
 ## Empezar en esta computadora
 
 La carpeta contiene una instalación con dependencias y una copia aislada de la base del respaldo. Desde la carpeta `outputs`, ejecuta:
