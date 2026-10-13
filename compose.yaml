@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: yanarteaga
+      POSTGRES_USER: yanarteaga
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U yanarteaga -d yanarteaga]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    ports:
+      - 127.0.0.1:8088:80
+    environment:
+      APP_NAME: yanarteaga
+      APP_ENV: local
+      APP_DEBUG: 'false'
+      APP_KEY: ${APP_KEY}
+      APP_URL: http://127.0.0.1:8088
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: yanarteaga
+      DB_USERNAME: yanarteaga
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres_data:
