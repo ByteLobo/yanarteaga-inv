@@ -18,11 +18,13 @@ jobs:
           shellcheck deploy/linux.sh docker/entrypoint.sh
       - name: Initialize production configuration and build
         run: bash deploy/linux.sh init http://localhost:8088
-      - name: Import schema and run migrations
+      - name: Restore initial backup and run migrations
         run: |
-          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml exec -T db psql -v ON_ERROR_STOP=1 -U yanarteaga -d yanarteaga < database/legacy/schema-original.sql
-          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml run --rm --no-deps app php artisan migrate --force
-          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml up -d --wait --wait-timeout 180
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml exec -T db psql -v ON_ERROR_STOP=1 -U yanarteaga -d postgres -c 'CREATE DATABASE fixture'
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml exec -T db psql -v ON_ERROR_STOP=1 -U yanarteaga -d fixture < database/legacy/schema-original.sql
+          docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml exec -T db pg_dump -U yanarteaga -d fixture -Fc > /tmp/schema-fixture.dump
+          bash deploy/linux.sh restore /tmp/schema-fixture.dump
+          if bash deploy/linux.sh restore /tmp/schema-fixture.dump; then echo 'Unexpected overwrite of populated database'; exit 1; fi
           bash deploy/linux.sh status
           curl --fail --silent --show-error http://127.0.0.1:8088/
       - name: Backup verification
