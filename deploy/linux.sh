@@ -76,7 +76,7 @@ case "$ACTION" in
   git merge-base --is-ancestor HEAD origin/main || { echo 'El código local diverge de origin/main.' >&2; exit 1; }
   git merge --ff-only origin/main
   PREVIOUS_IMAGE="$APP_IMAGE"
-  NEW_IMAGE="yanarteaga-inv:$(git rev-parse --short=12 HEAD)"
+  NEW_IMAGE="yanarteaga-inv:$(git rev-parse --short=12 HEAD)-$(date -u +%Y%m%dT%H%M%SZ)-$$"
   APP_IMAGE="$NEW_IMAGE" "${DC[@]}" build app
   artisan down
   trap 'artisan down || true; echo "Actualización interrumpida. Revisa los registros y la recuperación en docs/DESPLIEGUE-LINUX.md." >&2' ERR

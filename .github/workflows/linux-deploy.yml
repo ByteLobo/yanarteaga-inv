@@ -33,3 +33,10 @@ jobs:
       - name: Logs on failure
         if: failure()
         run: docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml logs --tail=100
+      - name: Update verification
+        run: |
+          bash deploy/linux.sh update
+          bash deploy/linux.sh status
+      - name: Update logs on failure
+        if: failure()
+        run: docker compose --env-file deploy/.env.production -f deploy/compose.production.yaml logs --tail=100
